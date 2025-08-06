@@ -2,3 +2,6 @@ site_name: 'New AWS EC2 Instance Template'
 
 nav:
   - Home: index.md
+
+plugins:
+  - techdocs-core

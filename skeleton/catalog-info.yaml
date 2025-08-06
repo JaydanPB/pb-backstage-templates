@@ -1,0 +1,19 @@
+# 📂 skeleton/catalog-info.yaml
+# This file defines the new component that gets registered in Portal.
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  # The 'name' and 'description' are stamped with values from the user's form.
+  name: ${{ values.componentName }}
+  description: "EC2 instance provisioned by Terraform. Account: ${{ values.awsAccountId }}"
+  annotations:
+    # This links the component back to its IaC repo in GitHub.
+    github.com/project-slug: ${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.repoUrl | parseRepoUrl | pick('repo') }}
+spec:
+  type: aws-account
+  # The 'owner' is also stamped from the form.
+  owner: ${{ values.owner }}
+  # This provides a link to the AWS console for the specific resource.
+  links:
+    - url: https://${{ values.awsRegion }}.console.aws.amazon.com/ec2/v2/home?region=${{ values.awsRegion }}#Instances:tag:Name=${{ values.instanceName }}
+      title: EC2 Instance in AWS Console

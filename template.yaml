@@ -6,7 +6,7 @@ metadata:
   title: New AWS EC2 Instance
   description: Provisions a new EC2 instance in a dedicated repository using Terraform.
   annotations:
-    backstage.io/techdocs-ref: url:.
+    backstage.io/techdocs-ref: dir:.
 spec:
   owner: platform-team
   type: resource

@@ -84,18 +84,6 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         description: "Terraform code for ${{ parameters.componentName }}"
 
-    - id: run-terraform
-      name: Run Terraform Apply
-      action: roadiehq:utils:run-command # This is a conceptual step.
-      # This custom action would run in your secure CI/CD environment.
-      # It would be pre-configured with credentials to assume roles into target accounts.
-      # The `awsAccountId` parameter would be used to select the correct role to assume.
-      input:
-        # command: |
-        #   cd ${{ steps.publish.output.repoPath }}
-        #   terraform init
-        #   terraform apply --auto-approve
-
     - id: register
       name: Register Component in Catalog
       action: catalog:register

@@ -1,0 +1,104 @@
+# 📂 template.yaml
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: new-aws-ec2-instance
+  title: New AWS EC2 Instance
+  description: Provisions a new EC2 instance in a dedicated repository using Terraform.
+spec:
+  owner: platform-team
+  type: resource
+
+  ## These parameters define the UI form.
+  parameters:
+    - title: Component & AWS Account Details
+      required: [componentName, owner, awsAccountId]
+      properties:
+        componentName:
+          title: Component Name
+          type: string
+          description: A unique name for this component in the catalog (e.g., 'billing-service-dev-server').
+        owner:
+          title: Owner
+          type: string
+          description: The team that will own this infrastructure.
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter: { kind: 'Group' }
+        awsAccountId:
+          title: AWS Account ID
+          type: string
+          description: The 12-digit AWS Account ID to deploy to.
+
+    - title: Configure EC2 Instance
+      required: [awsRegion, instanceName]
+      properties:
+        awsRegion:
+          title: AWS Region
+          type: string
+          description: The AWS region to deploy the instance in.
+          default: eu-west-2
+        instanceName:
+          title: Instance Name (Tag)
+          type: string
+          description: The 'Name' tag for the EC2 instance.
+        instanceType:
+          title: Instance Type
+          type: string
+          description: The EC2 instance type.
+          default: t2.micro
+
+    - title: Choose a Repository Location
+      required: [repoUrl]
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Name of the new GitHub repository for this component's Terraform code.
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts: ['github.com']
+
+  ## These are the backend automation steps.
+  steps:
+    - id: fetch-skeleton
+      name: Fetch Skeleton Files
+      action: fetch:template
+      input:
+        # This points to the skeleton/ directory in this same repository.
+        url: ./skeleton
+        # These values are passed into the skeleton files.
+        values:
+          componentName: ${{ parameters.componentName }}
+          owner: ${{ parameters.owner }}
+          awsAccountId: ${{ parameters.awsAccountId }}
+          awsRegion: ${{ parameters.awsRegion }}
+          instanceName: ${{ parameters.instanceName }}
+          instanceType: ${{ parameters.instanceType }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        description: "Terraform code for ${{ parameters.componentName }}"
+
+    - id: run-terraform
+      name: Run Terraform Apply
+      action: roadiehq:utils:run-command # This is a conceptual step.
+      # This custom action would run in your secure CI/CD environment.
+      # It would be pre-configured with credentials to assume roles into target accounts.
+      # The `awsAccountId` parameter would be used to select the correct role to assume.
+      input:
+        # command: |
+        #   cd ${{ steps.publish.output.repoPath }}
+        #   terraform init
+        #   terraform apply --auto-approve
+
+    - id: register
+      name: Register Component in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
